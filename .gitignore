@@ -1,0 +1,27 @@
+# Gradle files
+.gradle/
+build/
+
+# Local configuration file (sdk.dir is not valid for another machine)
+local.properties
+
+# Android Studio generated files
+.idea/
+*.iml
+*.ide
+
+# DS_Store
+.DS_Store
+
+# Captures
+captures/
+
+# External native build folder generated in Android Studio for Native C++ code
+.externalNativeBuild
+
+# Google Services (e.g. APIs keys)
+google-services.json
+
+# Keystore files
+*.jks
+*.keystore
