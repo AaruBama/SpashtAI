@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -19,6 +21,15 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        // Load API key from local.properties
+        val localProperties = Properties()
+        val localPropertiesFile = rootProject.file("local.properties")
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.inputStream().use { localProperties.load(it) }
+        }
+        val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -36,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.4"
@@ -57,6 +69,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
     
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.7.6")
@@ -65,7 +78,22 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     implementation("com.squareup.moshi:moshi:1.15.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+
+    // Google Generative AI (Gemini)
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+
+    // Room Database for history
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // PDF rendering (for preview) - using Android's built-in PdfRenderer
+    // No external dependency needed, API 21+
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -22,7 +22,9 @@ import com.ashaai.navigator.ui.components.PatientInsightCard
 @Composable
 fun HomeDashboard(
     viewModel: MainViewModel = viewModel(),
-    onNavigateToSettings: () -> Unit = {}
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToChat: () -> Unit = {},
+    onNavigateToReportScanner: () -> Unit = {}
 ) {
     val analysisState by viewModel.analysisState.collectAsState()
 
@@ -61,14 +63,14 @@ fun HomeDashboard(
                     ActionCard(
                         title = "Voice Diagnostic",
                         description = "Record symptoms (Hinglish)",
-                        onClick = { /* TODO: Launch MedASR */ }
+                        onClick = onNavigateToChat
                     )
                 }
                 item {
                     ActionCard(
                         title = "Report Scanner",
                         description = "Scan medical reports",
-                        onClick = { viewModel.analyzeReport("/path/to/image") }
+                        onClick = onNavigateToReportScanner
                     )
                 }
                 item {

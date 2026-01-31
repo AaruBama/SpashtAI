@@ -25,3 +25,14 @@ google-services.json
 # Keystore files
 *.jks
 *.keystore
+
+# Heap dumps
+*.hprof
+
+# APK files
+*.apk
+
+# Build outputs
+app/build/
+app/release/
+
