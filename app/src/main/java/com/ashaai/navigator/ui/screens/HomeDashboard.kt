@@ -84,8 +84,7 @@ fun HomeDashboard(
 
             // Display Results if available
             when (val state = analysisState) {
-                is AnalysisState.Data -> { // Assuming 'Success' was named 'Data' or similar in ViewModel. Let's fix this naming.
-                    // Wait, I named it Success in ViewModel.
+                is AnalysisState.Success -> {
                     PatientInsightCard(
                          medicalTerm = state.data.findings,
                          simplifiedText = state.data.simplified_text
