@@ -1,21 +1,20 @@
 package com.ashaai.navigator.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -23,6 +22,7 @@ import com.ashaai.navigator.ui.AnalysisState
 import com.ashaai.navigator.ui.MainViewModel
 import com.ashaai.navigator.ui.components.ActionCard
 import com.ashaai.navigator.ui.components.PatientInsightCard
+import com.ashaai.navigator.ui.theme.AshaAIGradients
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,119 +36,158 @@ fun HomeDashboard(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Spasht") },
-                actions = {
+            // Minimal header matching reference design
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 0.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Search",
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Spasht",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Profile")
+                        Icon(
+                            Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
+                }
+            }
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
                 .fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier.padding(bottom = 16.dp)
-            ) {
-                Text(
-                    text = "Diagnostic Intelligence",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Select a diagnostic tool to begin",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Grid of Action Cards
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                item {
-                    ActionCard(
-                        title = "Voice Diagnostic",
-                        description = "Record symptoms (Hinglish)",
-                        icon = Icons.Outlined.Mic,
-                        containerColor = Color(0xFF4A7C96), // Dark teal blue
-                        onClick = onNavigateToChat
+            item {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Diagnostic Intelligence",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-                item {
-                    ActionCard(
-                        title = "Report Scanner",
-                        description = "Scan medical reports",
-                        icon = Icons.Outlined.Description,
-                        containerColor = Color(0xFF70D4E8), // Light cyan blue
-                        onClick = onNavigateToReportScanner
-                    )
-                }
-                item {
-                    ActionCard(
-                        title = "Acoustic Check",
-                        description = "Analyze lung sounds",
-                        icon = Icons.Outlined.GraphicEq,
-                        containerColor = Color(0xFF6BB6A1), // Teal green
-                        onClick = { /* TODO: Launch HeAR */ }
-                    )
-                }
-                item {
-                    ActionCard(
-                        title = "More Options",
-                        description = "Coming soon",
-                        icon = Icons.Outlined.MoreHoriz,
-                        containerColor = Color(0xFFE8E8E8), // Light gray
-                        onClick = { /* TODO: More options */ }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Select a diagnostic method to begin",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            // Action Cards in a 2-column grid
+            item {
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ActionCard(
+                            title = "Voice Diagnostic",
+                            description = "Record symptoms\n(Hinglish)",
+                            icon = Icons.Outlined.Mic,
+                            brush = AshaAIGradients.voiceDiagnosticBrush,
+                            onClick = onNavigateToChat,
+                            modifier = Modifier.weight(1f)
+                        )
+                        ActionCard(
+                            title = "Report Scanner",
+                            description = "Scan medical reports",
+                            icon = Icons.Outlined.Description,
+                            brush = AshaAIGradients.reportScannerBrush,
+                            onClick = onNavigateToReportScanner,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        ActionCard(
+                            title = "Acoustic Check",
+                            description = "Analyze lung sounds",
+                            icon = Icons.Outlined.GraphicEq,
+                            brush = AshaAIGradients.acousticCheckBrush,
+                            onClick = { /* TODO: Launch HeAR */ },
+                            modifier = Modifier.weight(1f)
+                        )
+                        ActionCard(
+                            title = "More Options",
+                            description = "Coming soon",
+                            icon = Icons.Outlined.MoreHoriz,
+                            brush = AshaAIGradients.moreOptionsBrush,
+                            onClick = { /* TODO: More options */ },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+            }
 
             // Display Results if available
-            when (val state = analysisState) {
-                is AnalysisState.Success -> {
-                    PatientInsightCard(
-                         medicalTerm = state.data.findings,
-                         simplifiedText = state.data.simplified_text,
-                         isLoading = false
-                    )
+            item {
+                when (val state = analysisState) {
+                    is AnalysisState.Success -> {
+                        PatientInsightCard(
+                            medicalTerm = state.data.findings,
+                            simplifiedText = state.data.simplified_text,
+                            isLoading = false,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                    is AnalysisState.Loading -> {
+                        PatientInsightCard(
+                            medicalTerm = "Analyzing...",
+                            simplifiedText = "कृपया प्रतीक्षा करें...",
+                            isLoading = true,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                    is AnalysisState.Error -> {
+                        PatientInsightCard(
+                            medicalTerm = "Error: ${state.message}",
+                            simplifiedText = "त्रुटि हुई",
+                            isLoading = false,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                    else -> {
+                        // Idle state or simplified 'Spasht' View placeholder
+                        PatientInsightCard(
+                            medicalTerm = "No Active Analysis",
+                            simplifiedText = "कोई सक्रिय रिपोर्ट नहीं",
+                            isLoading = false,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
                 }
-                is AnalysisState.Loading -> {
-                    PatientInsightCard(
-                        medicalTerm = "Analyzing...",
-                        simplifiedText = "कृपया प्रतीक्षा करें...",
-                        isLoading = true
-                    )
-                }
-                is AnalysisState.Error -> {
-                    PatientInsightCard(
-                        medicalTerm = "Error: ${state.message}",
-                        simplifiedText = "त्रुटि हुई",
-                        isLoading = false
-                    )
-                }
-                else -> {
-                    // Idle state or simplified 'Spasht' View placeholder
-                    PatientInsightCard(
-                        medicalTerm = "No Active Analysis",
-                        simplifiedText = "कोई सक्रिय रिपोर्ट नहीं",
-                        isLoading = false
-                    )
-                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

@@ -32,21 +32,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val isListening = voiceProvider.isListening
     val voiceError = voiceProvider.errorMessage
 
-    // We observe spoken text and update the input field or auto-send
+    // No auto-send - voice input will populate text field for manual submission
     init {
-        viewModelScope.launch {
-            voiceProvider.spokenText.collect { text ->
-                if (text.isNotBlank() && !isListening.value) {
-                    // If listening stopped and we have text, we could auto-send or just populate.
-                    // For now, let's just populate the input field in UI via a state,
-                    // OR we can't easily update the UI's local state `inputText` from here without a binding.
-                    // So we'll expose `recognizedText` for the UI to consume.
-                }
-            }
-        }
+        // Just initialize, no auto-send logic needed
     }
 
-    // To simple expose the flow
+    // Expose voice input for live transcription display
     val voiceInput = voiceProvider.spokenText
 
 
@@ -55,6 +46,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
+    // Track if AI is currently thinking/responding
+    private val _isAiThinking = MutableStateFlow(false)
+    val isAiThinking: StateFlow<Boolean> = _isAiThinking.asStateFlow()
+
+    // Track if TTS is currently speaking
+    private val _isSpeaking = MutableStateFlow(false)
+    val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
     fun analyzeReport(imagePath: String) {
         viewModelScope.launch {
@@ -76,16 +75,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (isListening.value) {
             voiceProvider.stopListening()
         } else {
+            // Stop TTS when starting to listen (prevents capturing AI voice)
+            if (_isSpeaking.value) {
+                stopSpeaking()
+            }
             voiceProvider.startListening()
         }
     }
 
     fun speak(text: String) {
+        _isSpeaking.value = true
         voiceProvider.speak(text)
+        // Note: We can't track when TTS finishes without adding a listener
+        // For now, we'll set it to false after a reasonable delay or when manually stopped
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(text.length * 50L) // Rough estimate
+            _isSpeaking.value = false
+        }
     }
 
     fun stopSpeaking() {
         voiceProvider.stopSpeaking()
+        _isSpeaking.value = false
     }
 
     override fun onCleared() {
@@ -99,6 +110,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _messages.value = _messages.value + userMessage
 
         viewModelScope.launch {
+            _isAiThinking.value = true
             try {
                 // Use Gemini for healthcare responses if configured
                 if (geminiService.isConfigured()) {
@@ -117,12 +129,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val result = geminiService.getChatResponse(text, chatHistory)
 
                     result.onSuccess { response ->
+                        _isAiThinking.value = false
                         val botMessage = Message(text = response, isUser = false)
                         _messages.value = _messages.value + botMessage
 
                         // Auto-speak the response
                         speak(response)
                     }.onFailure { error ->
+                        _isAiThinking.value = false
                         val errorText = "I'm having trouble connecting right now. Error: ${error.message}"
                         val botMessage = Message(text = errorText, isUser = false)
                         _messages.value = _messages.value + botMessage
@@ -132,10 +146,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     // Fallback: Try REST API or show setup message
                     try {
                         val response = RetrofitClient.apiService.chat(ChatRequest(text))
+                        _isAiThinking.value = false
                         val botMessage = Message(text = response.response, isUser = false)
                         _messages.value = _messages.value + botMessage
                         speak(response.response)
                     } catch (e: Exception) {
+                        _isAiThinking.value = false
                         val setupText = "Please configure your Gemini API key in local.properties file. Add: GEMINI_API_KEY=your_key_here"
                         val botMessage = Message(text = setupText, isUser = false)
                         _messages.value = _messages.value + botMessage
@@ -143,6 +159,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     }
                 }
             } catch (e: Exception) {
+                _isAiThinking.value = false
                 val errorMessage = Message(text = "Error: ${e.message}", isUser = false)
                 _messages.value = _messages.value + errorMessage
                 speak("Sorry, I encountered an error.")

@@ -4,15 +4,34 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -22,6 +41,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.ashaai.navigator.ui.screens.*
+import com.ashaai.navigator.ui.theme.DeepNavyBlue
+import com.ashaai.navigator.ui.theme.MediumGray
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,28 +60,78 @@ fun AshaAINavigatorApp() {
     
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                val items = listOf("Home", "History", "Settings")
-                val icons = listOf(Icons.Default.Home, Icons.Default.History, Icons.Default.Settings)
-                
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        icon = { Icon(icons[index], contentDescription = screen) },
-                        label = { Text(screen) },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen } == true,
-                        onClick = {
-                            navController.navigate(screen) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        }
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    
+                    val items = listOf("Home", "History", "Settings")
+                    val icons = listOf(
+                        Icons.Outlined.Home,
+                        Icons.Outlined.Schedule,
+                        Icons.Outlined.Settings
                     )
+                    
+                    items.forEachIndexed { index, screen ->
+                        val isSelected = currentDestination?.hierarchy?.any { it.route == screen } == true
+                        
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    navController.navigate(screen) {
+                                        popUpTo(navController.graph.findStartDestination().id) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                },
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(
+                                        color = if (isSelected) DeepNavyBlue else Color.Transparent,
+                                        shape = RoundedCornerShape(16.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = icons[index],
+                                    contentDescription = screen,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (isSelected) Color.White else MediumGray
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Text(
+                                text = screen,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 12.sp,
+                                color = if (isSelected) DeepNavyBlue else MediumGray
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -86,7 +157,6 @@ fun AshaAINavigatorApp() {
                 ReportUploadScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onReportSelected = { uri, prompt ->
-                        // Encode URI to pass as navigation argument
                         val encodedUri = Uri.encode(uri.toString())
                         navController.navigate("ReportChat/$encodedUri/$prompt")
                     }
@@ -124,7 +194,6 @@ fun AshaAINavigatorApp() {
                 arguments = listOf(navArgument("reportId") { type = NavType.LongType })
             ) { backStackEntry ->
                 val reportId = backStackEntry.arguments?.getLong("reportId") ?: 0L
-                // Load report from history and show in chat
                 Text("Report History Detail: $reportId")
             }
             composable("Settings") { Text("Settings Screen Placeholder") }

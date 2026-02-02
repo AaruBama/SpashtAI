@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ashaai.navigator.ui.theme.AshaAIGradients
 
 @Composable
 fun PatientInsightCard(
@@ -29,121 +30,121 @@ fun PatientInsightCard(
 ) {
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Loading indicator at the top
-            if (isLoading) {
-                LinearProgressIndicator(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Clinical Finding Section (Top - Card within card)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
+        Box(modifier = Modifier.background(AshaAIGradients.patientInsightBrush)) {
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = "Clinical Finding",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.outline,
-                        fontWeight = FontWeight.SemiBold
+                // Loading indicator at the top
+                if (isLoading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (isLoading) {
-                        // Shimmer effect for loading
-                        ShimmerEffect(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(60.dp)
-                        )
-                    } else {
-                        Text(
-                            text = medicalTerm,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Medium,
-                            fontFamily = FontFamily.Monospace, // Monospace for lab report feel
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 28.sp
-                        )
-                    }
                 }
-            }
 
-            // Spasht (Simplified) Section (Bottom - Warm background)
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFF3E0) // Light Orange/Warm Yellow
-                )
-            ) {
-                Column(
+                // Clinical Finding Section (Top - Card within card)
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White.copy(alpha = 0.5f)
+                    )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
                         Text(
-                            text = "Spasht (Simplified)",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = Color(0xFFE65100), // Dark Orange
-                            fontWeight = FontWeight.Bold
+                            text = "Clinical Finding",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontWeight = FontWeight.SemiBold
                         )
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Verified",
-                            tint = Color(0xFF4CAF50), // Green checkmark
-                            modifier = Modifier.size(16.dp)
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (isLoading) {
+                            // Shimmer effect for loading
+                            ShimmerEffect(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(60.dp)
+                            )
+                        } else {
+                            Text(
+                                text = medicalTerm,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Medium,
+                                fontFamily = FontFamily.Monospace, // Monospace for lab report feel
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                lineHeight = 28.sp
+                            )
+                        }
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    if (isLoading) {
-                        // Shimmer effect for loading
-                        ShimmerEffect(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(40.dp)
-                        )
-                    } else {
+                // Spasht (Simplified) Section (Bottom - Warm background)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFFFF3E0).copy(alpha = 0.8f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = simplifiedText,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontSize = 18.sp, // Larger font
-                                color = Color(0xFF424242), // Dark Gray
-                                fontWeight = FontWeight.Medium,
-                                lineHeight = 24.sp
+                                text = "Spasht (Simplified)",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = Color(0xFFE65100), // Dark Orange
+                                fontWeight = FontWeight.Bold
                             )
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Verified",
+                                tint = Color(0xFF4CAF50), // Green checkmark
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (isLoading) {
+                            // Shimmer effect for loading
+                            ShimmerEffect(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(40.dp)
+                            )
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = simplifiedText,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontSize = 18.sp, // Larger font
+                                    color = Color(0xFF424242), // Dark Gray
+                                    fontWeight = FontWeight.Medium,
+                                    lineHeight = 24.sp
+                                )
+                            }
                         }
                     }
                 }
