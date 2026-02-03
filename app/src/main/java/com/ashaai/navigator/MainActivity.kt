@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,6 +40,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.ashaai.navigator.ui.components.icons.medicalRecordsIcon
 import com.ashaai.navigator.ui.screens.*
 import com.ashaai.navigator.ui.theme.DeepNavyBlue
 import com.ashaai.navigator.ui.theme.MediumGray
@@ -77,9 +78,9 @@ fun AshaAINavigatorApp() {
                     val currentDestination = navBackStackEntry?.destination
                     
                     val items = listOf("Home", "History", "Settings")
-                    val icons = listOf(
+                    val icons: List<ImageVector> = listOf(
                         Icons.Outlined.Home,
-                        Icons.Outlined.Schedule,
+                        medicalRecordsIcon(MediumGray),
                         Icons.Outlined.Settings
                     )
                     
@@ -154,9 +155,9 @@ fun AshaAINavigatorApp() {
                 )
             }
             composable("ReportUpload") {
-                ReportUploadScreen(
+                ReportScannerScreen(
                     onNavigateBack = { navController.popBackStack() },
-                    onReportSelected = { uri, prompt ->
+                    onReportAnalyzed = { uri, prompt ->
                         val encodedUri = Uri.encode(uri.toString())
                         navController.navigate("ReportChat/$encodedUri/$prompt")
                     }
