@@ -60,82 +60,6 @@ fun AshaAINavigatorApp() {
     val navController = rememberNavController()
     
     Scaffold(
-        bottomBar = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
-                shadowElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    
-                    val items = listOf("Home", "History", "Settings")
-                    val icons: List<ImageVector> = listOf(
-                        Icons.Outlined.Home,
-                        medicalRecordsIcon(MediumGray),
-                        Icons.Outlined.Settings
-                    )
-                    
-                    items.forEachIndexed { index, screen ->
-                        val isSelected = currentDestination?.hierarchy?.any { it.route == screen } == true
-                        
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) {
-                                    navController.navigate(screen) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(
-                                        color = if (isSelected) DeepNavyBlue else Color.Transparent,
-                                        shape = RoundedCornerShape(16.dp)
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = icons[index],
-                                    contentDescription = screen,
-                                    modifier = Modifier.size(24.dp),
-                                    tint = if (isSelected) Color.White else MediumGray
-                                )
-                            }
-                            
-                            Spacer(modifier = Modifier.height(4.dp))
-                            
-                            Text(
-                                text = screen,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                fontSize = 12.sp,
-                                color = if (isSelected) DeepNavyBlue else MediumGray
-                            )
-                        }
-                    }
-                }
-            }
-        }
     ) { innerPadding ->
         NavHost(
             navController = navController,
@@ -146,11 +70,16 @@ fun AshaAINavigatorApp() {
                 HomeDashboard(
                     onNavigateToSettings = { navController.navigate("Settings") },
                     onNavigateToChat = { navController.navigate("Chat") },
-                    onNavigateToReportScanner = { navController.navigate("ReportUpload") }
+                    onNavigateToReportScanner = { navController.navigate("ReportsAnalysis") }
                 )
             }
             composable("Chat") {
                 ChatScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable("ReportsAnalysis") {
+                ReportsAnalysisScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

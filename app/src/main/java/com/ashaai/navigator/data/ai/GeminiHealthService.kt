@@ -100,12 +100,12 @@ class GeminiHealthService {
      */
     private fun buildHealthcarePrompt(userMessage: String): String {
         return """
-$SYSTEM_PROMPT
+            $SYSTEM_PROMPT
 
-**Patient's Message**: $userMessage
+            **Patient's Message**: $userMessage
 
-**Your Response**:
-"""
+            **Your Response**:
+        """
     }
 
     /**

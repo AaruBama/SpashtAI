@@ -1,30 +1,34 @@
 package com.ashaai.navigator.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ashaai.navigator.ui.AnalysisState
 import com.ashaai.navigator.ui.MainViewModel
-import com.ashaai.navigator.ui.components.ActionCard
-import com.ashaai.navigator.ui.components.PatientInsightCard
-import com.ashaai.navigator.ui.components.icons.*
-import com.ashaai.navigator.ui.theme.AshaAIGradients
-import com.ashaai.navigator.ui.theme.Cyan
+import com.ashaai.navigator.ui.components.*
+import com.ashaai.navigator.ui.models.HealthTip
+import com.ashaai.navigator.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeDashboard(
     viewModel: MainViewModel = viewModel(),
@@ -32,160 +36,215 @@ fun HomeDashboard(
     onNavigateToChat: () -> Unit = {},
     onNavigateToReportScanner: () -> Unit = {}
 ) {
-    val analysisState by viewModel.analysisState.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
 
     Scaffold(
-        topBar = {
-            // Minimal header matching reference design
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shadowElevation = 0.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search",
-                        modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Spasht",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    IconButton(onClick = onNavigateToSettings) {
-                        Icon(
-                            Icons.Default.AccountCircle,
-                            contentDescription = "Profile",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+        bottomBar = {
+            BottomNavigationBar(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
         }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
-                .padding(paddingValues)
                 .fillMaxSize()
+                .background(Color.White)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
+            // Header
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 32.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(Primary, RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MedicalServices,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Text(
+                            text = "HealthConnect",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Primary
+                        )
+                    }
+
+                    // Profile picture
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .border(2.dp, Primary.copy(alpha = 0.2f), CircleShape)
+                            .padding(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = "Profile",
+                            tint = Primary,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                        )
+                    }
+                }
+            }
+
+            // Greeting
             item {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = "Diagnostic Intelligence",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "Good morning, Alex",
+                        fontSize = 14.sp,
+                        color = Gray500
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Select a diagnostic method to begin",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Ready for your check-up?",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 30.sp
                     )
                 }
             }
 
-            // Action Cards in a 2-column grid
+            // Feature Cards (2x2 Grid)
             item {
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    modifier = Modifier.padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ActionCard(
-                            title = "Voice Diagnostic",
-                            description = "Record symptoms\n(Hinglish)",
-                            icon = voiceDiagnosisIcon(Color.White),
-                            brush = AshaAIGradients.voiceDiagnosticBrush,
+                            title = "AI Symptom Checker",
+                            description = "Talk to AI",
+                            icon = Icons.Default.Mic,
                             onClick = onNavigateToChat,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = BlueCardBg,
+                            iconBackgroundColor = BlueIconBg,
+                            iconTint = Primary,
+                            borderColor = CardBorder
                         )
                         ActionCard(
-                            title = "Report Scanner",
-                            description = "Scan medical reports",
-                            icon = uploadReportIcon(Color.White),
-                            brush = AshaAIGradients.reportScannerBrush,
+                            title = "X-rays, CT & Reports",
+                            description = "Analyze",
+                            icon = Icons.Outlined.FolderOpen,
                             onClick = onNavigateToReportScanner,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = TealCardBg,
+                            iconBackgroundColor = TealIconBg,
+                            iconTint = TealIcon,
+                            borderColor = CardBorder
                         )
                     }
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ActionCard(
-                            title = "Acoustic Check",
-                            description = "Analyze lung sounds",
-                            icon = acousticDiagnosisIcon(Color.White),
-                            brush = AshaAIGradients.acousticCheckBrush,
-                            onClick = { /* TODO: Launch HeAR */ },
-                            modifier = Modifier.weight(1f)
+                            title = "Cough & Breathing",
+                            description = "Voice Analysis",
+                            icon = Icons.Default.GraphicEq,
+                            onClick = { /* TODO */ },
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = PurpleCardBg,
+                            iconBackgroundColor = PurpleIconBg,
+                            iconTint = PurpleIcon,
+                            borderColor = CardBorder
                         )
                         ActionCard(
-                            title = "More Options",
-                            description = "Coming soon",
-                            icon = Icons.Outlined.MoreHoriz,
-                            brush = AshaAIGradients.moreOptionsBrush,
-                            onClick = { /* TODO: More options */ },
-                            modifier = Modifier.weight(1f)
+                            title = "My Health History",
+                            description = "Journey",
+                            icon = Icons.Default.MonitorHeart,
+                            onClick = { /* TODO */ },
+                            modifier = Modifier.weight(1f),
+                            backgroundColor = OrangeCardBg,
+                            iconBackgroundColor = OrangeIconBg,
+                            iconTint = OrangeIcon,
+                            borderColor = CardBorder
                         )
                     }
                 }
             }
 
+            // Daily Health Tips
             item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-
-            // Display Results if available
-            item {
-                when (val state = analysisState) {
-                    is AnalysisState.Success -> {
-                        PatientInsightCard(
-                            medicalTerm = state.data.findings,
-                            simplifiedText = state.data.simplified_text,
-                            hasData = true,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                    }
-                    is AnalysisState.Loading -> {
-                        PatientInsightCard(
-                            medicalTerm = "Analyzing...",
-                            simplifiedText = "कृपया प्रतीक्षा करें...",
-                            hasData = true,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                    }
-                    is AnalysisState.Error -> {
-                        PatientInsightCard(
-                            medicalTerm = "Error: ${state.message}",
-                            simplifiedText = "त्रुटि हुई",
-                            hasData = true,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
-                    }
-                    else -> {
-                        // Idle state or simplified 'Spasht' View placeholder
-                        PatientInsightCard(
-                            hasData = false,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                Column(
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Text(
+                        text = "Daily Health Tips",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+                    )
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            HealthTipCard(
+                                icon = Icons.Default.WaterDrop,
+                                title = "Stay hydrated for better digestion",
+                                subtitle = "Target: 2.5L today",
+                                gradient = Brush.linearGradient(
+                                    colors = listOf(Primary, Color(0xFF60a5fa))
+                                )
+                            )
+                        }
+                        item {
+                            HealthTipCard(
+                                icon = Icons.Default.DirectionsWalk,
+                                title = "Take 10,000 steps today",
+                                subtitle = "You're at 4,500 now",
+                                gradient = Brush.linearGradient(
+                                    colors = listOf(TealGradientStart, TealGradientEnd)
+                                )
+                            )
+                        }
                     }
                 }
             }
 
+            // Your Summary
             item {
-                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
+                ) {
+                    Text(
+                        text = "Your Summary",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    HealthSummaryCard(
+                        score = 85,
+                        scoreLabel = "Excellent",
+                        nextStepTitle = "Next Step",
+                        nextStepDescription = "Schedule your annual check-up to keep your score high.",
+                        onBookAppointment = { /* TODO */ }
+                    )
+                }
             }
         }
     }
