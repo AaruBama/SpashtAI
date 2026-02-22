@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 
 sealed class AnalysisState {
     object Idle : AnalysisState()
@@ -55,16 +56,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isSpeaking = MutableStateFlow(false)
     val isSpeaking: StateFlow<Boolean> = _isSpeaking.asStateFlow()
 
-    fun analyzeReport(imagePath: String) {
+    fun analyzeReport(uri: android.net.Uri, prompt: String = "Describe this medical report in detail.") {
         viewModelScope.launch {
             _analysisState.value = AnalysisState.Loading
             try {
-                // In a real app, convert imagePath to Base64 or Multipart here.
-                // Sending dummy Base64 for demonstration as per requirement "generate boilerplate".
-                val dummyBase64 = "base64_encoded_image_placeholder"
-
-                val response = RetrofitClient.apiService.analyzeImage(AnalysisRequest(dummyBase64))
-                _analysisState.value = AnalysisState.Success(response)
+                val context = getApplication<Application>()
+                val imagePart = com.ashaai.navigator.utils.FileUtils.getMultipartPart(context, uri, "image")
+                
+                if (imagePart != null) {
+                    val promptBody = okhttp3.RequestBody.create(
+                        "text/plain".toMediaTypeOrNull(),
+                        prompt
+                    )
+                    
+                    val response = RetrofitClient.apiService.analyzeImage(imagePart, promptBody)
+                    _analysisState.value = AnalysisState.Success(response)
+                } else {
+                    _analysisState.value = AnalysisState.Error("Could not process image file")
+                }
             } catch (e: Exception) {
                 _analysisState.value = AnalysisState.Error(e.message ?: "Unknown Error")
             }

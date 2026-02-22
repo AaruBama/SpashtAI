@@ -4,6 +4,5 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class AnalysisResponse(
-    val findings: String,
-    val simplified_text: String
+    val analysis: String
 )

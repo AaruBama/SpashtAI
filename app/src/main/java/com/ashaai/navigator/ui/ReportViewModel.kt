@@ -9,10 +9,15 @@ import com.ashaai.navigator.data.database.AppDatabase
 import com.ashaai.navigator.data.model.ChatMessage
 import com.ashaai.navigator.data.model.ReportHistory
 import com.ashaai.navigator.data.model.ReportType
+import android.util.Log
+import com.ashaai.navigator.data.remote.RetrofitClient
+import com.ashaai.navigator.utils.FileUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
 import java.io.File
 import java.io.FileOutputStream
 
@@ -54,13 +59,28 @@ class ReportViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 // Save report file locally
                 val savedFilePath = saveReportToLocal(reportUri)
+                val context = getApplication<Application>()
 
-                // Analyze with Gemini
-                val result = geminiService.analyzeReportImage(
-                    getApplication(),
-                    reportUri,
-                    userPrompt
-                )
+                Log.d("ReportViewModel", "Attempting local MedGemma analysis for URI: $reportUri")
+                // Only use local MedGemma server
+                val result = try {
+                    val imagePart = FileUtils.getMultipartPart(context, reportUri, "image")
+                    if (imagePart != null) {
+                        val promptBody = RequestBody.create(
+                            "text/plain".toMediaTypeOrNull(),
+                            userPrompt
+                        )
+                        val response = RetrofitClient.apiService.analyzeImage(imagePart, promptBody)
+                        Log.d("ReportViewModel", "Local MedGemma successful")
+                        Result.success(response.analysis)
+                    } else {
+                        Log.e("ReportViewModel", "Could not process image for local server")
+                        Result.failure(Exception("Could not process image file"))
+                    }
+                } catch (e: Exception) {
+                    Log.e("ReportViewModel", "Local MedGemma failed: ${e.message}")
+                    Result.failure(e)
+                }
 
                 result.onSuccess { response ->
                     _analysisState.value = ReportAnalysisState.Success(response)
@@ -106,11 +126,30 @@ class ReportViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             try {
                 currentReportUri?.let { uri ->
-                    val result = geminiService.analyzeReportImage(
-                        getApplication(),
-                        uri,
-                        text
-                    )
+                    val context = getApplication<Application>()
+                    Log.d("ReportViewModel", "Attempting local MedGemma follow-up")
+                    val result = try {
+                        val imagePart = FileUtils.getMultipartPart(context, uri, "image")
+                        if (imagePart != null) {
+                            val promptBody = RequestBody.create(
+                                "text/plain".toMediaTypeOrNull(),
+                                text
+                            )
+                            val historyBody = RequestBody.create(
+                                "text/plain".toMediaTypeOrNull(),
+                                getHistoryJson()
+                            )
+                            val response = RetrofitClient.apiService.analyzeImage(imagePart, promptBody, historyBody)
+                            Log.d("ReportViewModel", "Local MedGemma follow-up successful")
+                            Result.success(response.analysis)
+                        } else {
+                            Log.e("ReportViewModel", "Could not process image for local follow-up")
+                            Result.failure(Exception("Could not process image file"))
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ReportViewModel", "Local MedGemma follow-up failed: ${e.message}")
+                        Result.failure(e)
+                    }
 
                     result.onSuccess { response ->
                         val aiMessage = ChatMessage(text = response, isUser = false)
@@ -212,5 +251,18 @@ class ReportViewModel(application: Application) : AndroidViewModel(application) 
         } else {
             prompt
         }
+    }
+    private fun getHistoryJson(): String {
+        val historyMessages = _messages.value.dropLast(1) // All except current question
+        if (historyMessages.isEmpty()) return "[]"
+        
+        val jsonArray = org.json.JSONArray()
+        historyMessages.forEach { msg ->
+            val obj = org.json.JSONObject()
+            obj.put("role", if (msg.isUser) "user" else "assistant")
+            obj.put("content", msg.text)
+            jsonArray.put(obj)
+        }
+        return jsonArray.toString()
     }
 }

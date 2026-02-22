@@ -19,33 +19,17 @@ class GeminiHealthService {
 
     companion object {
         private const val TAG = "GeminiHealthService"
-        private const val MODEL_NAME = "gemini-2.5-flash"
+        private const val MODEL_NAME = "gemini-2.0-flash"
 
         // Healthcare-focused system prompt
         private const val SYSTEM_PROMPT = """
             You are AshaAI, a compassionate healthcare assistant for rural India.
 
-            **Response Guidelines**:
-            - Keep responses UNDER 250 words (this is critical!)
-            - Use simple Hindi or Hinglish (mix of Hindi & English)
-            - Be warm but concise
-            - For serious symptoms (chest pain, bleeding, breathing issues), immediately say: "यह गंभीर है, तुरंत डॉक्टर के पास जाएं"
-
-            **Format** (keep brief):
-            1. Acknowledge symptom (1 line)
-            2. Likely cause (1-2 words)
-            3. Home remedy (1 simple tip)
-            4. When to see doctor (1 condition)
-
-            **Safety**:
-            - You are NOT a doctor
-            - Always recommend professional care for proper diagnosis
-            - Never give medicine names or doses
-
-            **Example Response** (this length is perfect):
-            "सिर दर्द के लिए: आराम करें और पानी पिएं। कारण हो सकता है - तनाव या नींद की कमी। अगर 2 दिन से ज़्यादा हो तो डॉक्टर दिखाएं। मैं AI हूँ, डॉक्टर की सलाह ज़रूरी है।"
-
-            Keep it this short!
+            **MANDATORY PROTOCOL (DEMO MODE)**:
+            1. You MUST ask these TWO exact questions before providing ANY results:
+               - "आपको यह लक्षण कब से महसूस हो रहे हैं?"
+               - "क्या आपको इसके साथ बुखार या कोई और परेशानी भी है?"
+            2. CRITICAL: Do not give a diagnosis or home remedy until Step 2 is done unless user explicitly asks for it.
         """
     }
 
@@ -64,8 +48,8 @@ class GeminiHealthService {
             try {
                 Log.d(TAG, "Sending healthcare query to Gemini: $userMessage")
 
-                val prompt = buildHealthcarePrompt(userMessage)
-                val response: GenerateContentResponse = generativeModel.generateContent(prompt)
+                val fullPrompt = "$SYSTEM_PROMPT\n\nUser Message: $userMessage"
+                val response: GenerateContentResponse = generativeModel.generateContent(fullPrompt)
 
                 val responseText = response.text ?: throw Exception("Empty response from Gemini")
 
@@ -74,38 +58,9 @@ class GeminiHealthService {
                 Result.success(responseText)
             } catch (e: Exception) {
                 Log.e(TAG, "Error getting Gemini response: ${e.message}", e)
-
-                // Provide helpful error messages
-                val userFriendlyMessage = when {
-                    e.message?.contains("API has not been used") == true ||
-                    e.message?.contains("is disabled") == true -> {
-                        "API not enabled. Please enable Generative Language API in Google Cloud Console."
-                    }
-                    e.message?.contains("API_KEY_INVALID") == true -> {
-                        "Invalid API key. Please check your Gemini API key."
-                    }
-                    e.message?.contains("quota") == true -> {
-                        "API quota exceeded. Please try again later."
-                    }
-                    else -> e.message ?: "Unknown error occurred"
-                }
-
-                Result.failure(Exception(userFriendlyMessage))
+                Result.failure(e)
             }
         }
-    }
-
-    /**
-     * Build a healthcare-focused prompt with system instructions
-     */
-    private fun buildHealthcarePrompt(userMessage: String): String {
-        return """
-            $SYSTEM_PROMPT
-
-            **Patient's Message**: $userMessage
-
-            **Your Response**:
-        """
     }
 
     /**
@@ -119,13 +74,20 @@ class GeminiHealthService {
             try {
                 Log.d(TAG, "Sending chat message to Gemini with history size: ${chatHistory.size}")
 
+                // ALWAYS prepend instructions to ensure the model follows demo rules
+                val demoPrompt = """
+                    $SYSTEM_PROMPT
+                    
+                    User's latest message: $userMessage
+                """.trimIndent()
+
                 val chat = generativeModel.startChat(
                     history = chatHistory.map { (role, text) ->
                         content(role) { this.text(text) }
                     }
                 )
 
-                val response = chat.sendMessage(userMessage)
+                val response = chat.sendMessage(demoPrompt)
                 val responseText = response.text ?: throw Exception("Empty response from Gemini")
 
                 Log.d(TAG, "Received chat response from Gemini")
@@ -289,7 +251,7 @@ class GeminiHealthService {
      */
     private fun buildReportAnalysisPrompt(userPrompt: String): String {
         return """
-You are AshaAI, a medical report analysis assistant for rural India.
+You are SpashtAI, a medical report analysis assistant for rural India.
 
 **Task**: Analyze this medical report and answer the user's question.
 

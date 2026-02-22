@@ -85,9 +85,23 @@ class AndroidNativeVoiceProvider(private val context: Context) : IVoiceProvider,
     override fun speak(text: String) {
         // Stop any ongoing speech first
         textToSpeech?.stop()
+        
+        // Clean text: remove Markdown symbols like ** and sanitize for better TTS
+        val cleanedText = cleanTextForSpeech(text)
+        
         // Speak with proper locale
-        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-        Log.d(TAG, "Speaking text: ${text.take(50)}...")
+        textToSpeech?.speak(cleanedText, TextToSpeech.QUEUE_FLUSH, null, null)
+        Log.d(TAG, "Speaking cleaned text: ${cleanedText.take(50)}...")
+    }
+
+    private fun cleanTextForSpeech(text: String): String {
+        return text.replace("**", "")
+            .replace("__", "")
+            .replace("#", "")
+            .replace("* ", "")
+            .replace("- ", "")
+            .replace("`", "")
+            .trim()
     }
 
     override fun stopSpeaking() {

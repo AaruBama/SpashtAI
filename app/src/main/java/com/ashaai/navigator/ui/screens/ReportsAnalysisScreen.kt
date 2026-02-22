@@ -55,7 +55,8 @@ enum class ReportIcon {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReportsAnalysisScreen(
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onNavigateToChat: (Uri) -> Unit
 ) {
     val context = LocalContext.current
     var recentReports by remember {
@@ -99,7 +100,8 @@ fun ReportsAnalysisScreen(
                 it,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
             )
-            // TODO: Handle file upload
+            // Navigate to chat for analysis
+            onNavigateToChat(it)
         }
     }
 
@@ -380,7 +382,13 @@ fun ReportsAnalysisScreen(
 
             // Report items
             items(recentReports) { report ->
-                ReportListItem(report = report)
+                ReportListItem(
+                    report = report,
+                    onClick = {
+                        // For demo, we navigate to chat with a dummy URI or handled if real history exists
+                        // In a real app, we'd use the stored report file path
+                    }
+                )
             }
 
             // Bottom spacing
@@ -392,11 +400,14 @@ fun ReportsAnalysisScreen(
 }
 
 @Composable
-fun ReportListItem(report: AnalyzedReport) {
+fun ReportListItem(
+    report: AnalyzedReport,
+    onClick: () -> Unit = {}
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Open report */ },
+            .clickable { onClick() },
         color = Color.White
     ) {
         Row(

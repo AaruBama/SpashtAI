@@ -80,7 +80,12 @@ fun AshaAINavigatorApp() {
             }
             composable("ReportsAnalysis") {
                 ReportsAnalysisScreen(
-                    onNavigateBack = { navController.popBackStack() }
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToChat = { uri ->
+                        val encodedUri = Uri.encode(uri.toString())
+                        val defaultPrompt = "कृपया इस रिपोर्ट को समझाइए। क्या कोई चिंता की बात है?"
+                        navController.navigate("ReportChat/$encodedUri/$defaultPrompt")
+                    }
                 )
             }
             composable("ReportUpload") {
