@@ -1,4 +1,4 @@
 <resources>
-    <style name="Theme.AshaAINavigator" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.SpashtAI" parent="android:Theme.Material.Light.NoActionBar">
     </style>
 </resources>

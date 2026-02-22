@@ -1,6 +1,6 @@
-# AshaAI Navigator - Healthcare Co-Pilot for Frontline Workers
+# Spasht AI - Healthcare Co-Pilot for Frontline Workers
 
-AshaAI Navigator is a state-of-the-art Android healthcare co-pilot designed for frontline workers in India. It assists in clinical diagnostics via voice, image analysis of medical reports, and comprehensive patient history management.
+Spasht AI is a state-of-the-art Android healthcare co-pilot designed for frontline workers in India. It assists in clinical diagnostics via voice, image analysis of medical reports, and comprehensive patient history management.
 
 ## 🚀 Key Features
 

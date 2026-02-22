@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AshaAI Navigator"
+rootProject.name = "Spasht AI"
 include(":app")

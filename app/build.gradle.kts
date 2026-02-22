@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.ashaai.navigator"
+    namespace = "com.spashtai.navigator"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ashaai.navigator"
+        applicationId = "com.spashtai.navigator"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
