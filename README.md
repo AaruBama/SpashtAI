@@ -35,16 +35,41 @@ While the current version runs on a local server for rapid prototyping and priva
 
 ## 🏗 Setup and Integration
 
-### 1. MedGemma Local Server Setup
-The app requires the local analysis server to be running to process medical reports.
-*   **Repository**: [AaruBama/medgemma-local-server](https://github.com/AaruBama/medgemma-local-server)
-*   Clone the repository and follow its README to start the FastAPI server on your local machine. Ensure your machine and the Android device are on the same local network.
+Follow these steps to run the Spasht AI Android application on your local machine:
 
-### 2. Android App Configuration
-*   **Update IP Address**: Open `app/src/main/java/com/spashtai/navigator/data/remote/RetrofitClient.kt`.
-*   Change the `PHYSICAL_DEVICE_IP` constant (e.g., `"192.168.1.5"`) to match the IPv4 address of the computer running the MedGemma server.
-*   **Build & Run**: Sync the project with Gradle in Android Studio and deploy to your physical device or emulator.
+### 1. Prerequisites
+- **Android Studio** (Latest stable version recommended, e.g., Iguana or Jellyfish).
+- **Android SDK** (API level 34 or higher).
+- **Physical Android Device** (Recommended) or Android Emulator.
 
-### 3. Permissions & Security
-*   The app requires Network access and File/Camera permissions to interact with and analyze medical reports.
-*   **Cleartext Traffic**: The `AndroidManifest.xml` has `xml android:usesCleartextTraffic="true"` enabled to allow HTTP connections to your local development server. Ensure you transition to secure HTTPS for any production deployment.
+### 2. MedGemma Local Server Setup (Backend)
+The app relies on a companion local server for analyzing medical reports to ensure data privacy and zero cloud cost during development.
+*   **Server Repository**: You must clone and run the backend from [AaruBama/medgemma-local-server](https://github.com/AaruBama/medgemma-local-server).
+*   Follow the backend repo's `README.md` to activate the Python environment, download the weights, and launch the FastAPI server.
+*   *Note: Ensure your Android device/emulator and the computer running the server are connected to the **same local Wi-Fi network**.*
+
+### 3. Clone and Open the Android Project
+```bash
+git clone git@github.com:AaruBama/SpashtAI.git
+cd SpashtAI
+```
+*   Launch **Android Studio**, select `Open`, and navigate to the cloned `SpashtAI` directory.
+*   Wait for Gradle to sync the project dependencies.
+
+### 4. Configure Networking (Crucial Step)
+To allow the Android app to talk to your local Python server, you must provide your computer's local IP address.
+*   Find your computer's local IPv4 address (e.g., using `ifconfig` on macOS/Linux or `ipconfig` on Windows).
+*   Open the file: `app/src/main/java/com/spashtai/navigator/data/remote/RetrofitClient.kt`.
+*   Update the `PHYSICAL_DEVICE_IP` constant:
+    ```kotlin
+    private const val PHYSICAL_DEVICE_IP = "192.168.1.5" // Replace with YOUR local IP
+    ```
+
+### 5. Permissions & Security Note
+*   The application requests **Network** (for API communication) and **Storage/Camera** (to read and capture medical reports).
+*   **Cleartext Traffic**: Within `AndroidManifest.xml`, `android:usesCleartextTraffic="true"` is temporarily enabled. This is by design to permit unencrypted HTTP traffic solely so the app can communicate with your local development server over your home Wi-Fi.
+
+### 6. Build and Run
+*   Connect your Android device via USB (ensure USB Debugging is enabled) or start an emulator.
+*   Click the **Play (Run 'app')** button in Android Studio.
+*   The Spasht AI app will install and launch. Navigate to the "Report Scanner" tab, upload an image, and it will instantly interface with your local MedGemma server!
