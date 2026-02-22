@@ -35,6 +35,16 @@ While the current version runs on a local server for rapid prototyping and priva
 
 ## 🏗 Setup and Integration
 
-1.  **Local Server**: Ensure the `medgemma_server.py` is running on a machine accessible to the Android device.
-2.  **Network Configuration**: Update your laptop's local IP in `RetrofitClient.kt`.
-3.  **Cleartext Traffic**: The `AndroidManifest.xml` has cleartext traffic enabled for local development. For production, ensure HTTPS is implemented.
+### 1. MedGemma Local Server Setup
+The app requires the local analysis server to be running to process medical reports.
+*   **Repository**: [AaruBama/medgemma-local-server](https://github.com/AaruBama/medgemma-local-server)
+*   Clone the repository and follow its README to start the FastAPI server on your local machine. Ensure your machine and the Android device are on the same local network.
+
+### 2. Android App Configuration
+*   **Update IP Address**: Open `app/src/main/java/com/spashtai/navigator/data/remote/RetrofitClient.kt`.
+*   Change the `PHYSICAL_DEVICE_IP` constant (e.g., `"192.168.1.5"`) to match the IPv4 address of the computer running the MedGemma server.
+*   **Build & Run**: Sync the project with Gradle in Android Studio and deploy to your physical device or emulator.
+
+### 3. Permissions & Security
+*   The app requires Network access and File/Camera permissions to interact with and analyze medical reports.
+*   **Cleartext Traffic**: The `AndroidManifest.xml` has `xml android:usesCleartextTraffic="true"` enabled to allow HTTP connections to your local development server. Ensure you transition to secure HTTPS for any production deployment.
